@@ -133,7 +133,7 @@ int main()
     //带权无向图邻接表
     graph_node graph1[VERTEXS]={{NULL},{NULL},{NULL},{NULL},{NULL}};
     CreateGraph(graph1);
-
+    
     OutputGraphInfo("graph1 info:",graph1);
     Prim("graph1 prim info:",graph1);
     
