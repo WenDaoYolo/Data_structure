@@ -2,6 +2,38 @@
 #define INVALID 99999
 #define VERTEXS 6
 
+/**********************    UF_SET    **********************/
+struct set_node
+{
+    int father;
+};
+
+void InitSetNode(set_node* sets)
+{
+    for(int i=0;i<VERTEXS;i++)
+        sets[i].father=i;
+}
+
+int FindSet(set_node* sets,int x)
+{
+    if(sets[x].father==x)
+        return x;
+    else
+        return sets[x].father=FindSet(sets,sets[x].father);
+}
+
+void UnionSet(set_node* sets,int x,int y)
+{    
+    int xf=FindSet(sets,x);
+    int yf=FindSet(sets,y);
+
+    if(xf==yf)
+        return; 
+
+    sets[yf].father=xf;
+}
+/**********************    UF_SET    **********************/
+
 struct link_node
 {
     int index,edge_value;
@@ -65,7 +97,35 @@ void DestroyGraph(graph_node* graph)
 
 void Kruskal(const char* str,graph_node* graph)
 {
-    
+    set_node sets[VERTEXS];
+    InitSetNode(sets);
+    int cur_min_vertex=INVALID,cur_min_value=INVALID,father_vertex=INVALID;
+    int tree_len=0,edge_sum_value=0;
+
+    std::cout<<str<<std::endl;
+    while(tree_len<VERTEXS-1)
+    {
+        cur_min_value=INVALID;
+        for(int i=0;i<VERTEXS;i++)
+        {
+            link_node* find=graph[i].head->next;
+            while(find!=NULL)
+            {
+                if(find->edge_value<cur_min_value&&FindSet(sets,i)!=FindSet(sets,find->index))
+                {
+                    father_vertex=i;
+                    cur_min_value=find->edge_value;
+                    cur_min_vertex=find->index;
+                }
+                find=find->next;
+            }
+        }
+        std::cout<<father_vertex+1<<"-"<<cur_min_vertex+1<<"   length="<<cur_min_value<<std::endl;
+        UnionSet(sets,father_vertex,cur_min_vertex);
+        edge_sum_value+=cur_min_value;
+        tree_len++;
+    }
+    std::cout<<"edge sum value:"<<edge_sum_value<<std::endl;
 }
 
 void CreateGraph(graph_node* graph1)
