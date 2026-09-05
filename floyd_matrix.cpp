@@ -43,6 +43,13 @@ void InitFloyd(int(*P)[RLEN],int(*D)[RLEN],int(*G)[RLEN])
     }
 }
 
+void Output1to3Road(int start,int target,int(*P)[RLEN])
+{
+    if(P[start][target]!=start)
+        Output1to3Road(start,P[start][target],P);
+    std::cout<<"->"<<target;
+}
+
 void OutputFloydTableInfo(int(*P)[RLEN],int(*D)[RLEN])
 {
     for(int i=0;i<RLEN;i++)
@@ -59,6 +66,9 @@ void OutputFloydTableInfo(int(*P)[RLEN],int(*D)[RLEN])
         }
         std::cout<<std::endl;
     }
+    std::cout<<"1 to 3 road: 1";
+    Output1to3Road(1,3,P);
+    std::cout<<std::endl;
 }
 
 void Floyd(const char* str,int(*G)[RLEN])
