@@ -1,10 +1,10 @@
 #include<iostream>
-#define RLEN 6
-#define CLEN RLEN
-#define X 999
 #define INVALID -1
+#define VERTEXS 6
+#define X 999
 
 /**********************        PRIORITY QUEUE        **********************/
+
 struct edge
 {
     int start,target,width;
@@ -160,7 +160,6 @@ class PriorityQueue
 };
 /**********************        PRIORITY QUEUE        **********************/
 
-
 /**********************        DIJKSTRA TABLE        **********************/
 struct table_node
 {
@@ -169,7 +168,7 @@ struct table_node
 
 void InitTable(table_node* T)
 {
-    for(int i=0;i<RLEN;i++)
+    for(int i=0;i<VERTEXS;i++)
     {
         //初始到任何点都为无穷大
         T[i].distance=X;
@@ -187,7 +186,7 @@ void OutputRoad(int start,int cur,table_node* T,const char* M)
 void DisTableInfo(table_node* T,const char* M,int start)//M:顶点编号映射表
 {
     std::cout<<"VERTEX    PRE    DISTANCE    ROAD    "<<std::endl;
-    for(int i=0;i<RLEN;i++)
+    for(int i=0;i<VERTEXS;i++)
     {
         if(i==start)
             continue;
@@ -198,11 +197,77 @@ void DisTableInfo(table_node* T,const char* M,int start)//M:顶点编号映射�
 }
 /**********************        DIJKSTRA TABLE        **********************/
 
-/**********************           DIJKSTRA          **********************/
-void Dijkstra(const char* str, int(*G)[RLEN], const char* M, int start)
+/**********************           GRAPHIC           **********************/
+struct link_node
 {
-    bool visited[RLEN]={false};
-    table_node T[RLEN];
+    int index,edge_value;
+    link_node* next;
+};
+
+struct graph_node
+{
+    link_node* head;
+};
+
+void InitGraph(graph_node* graph)
+{
+    for(int i=0;i<VERTEXS;i++)
+    {
+        graph[i].head=new link_node;
+        graph[i].head->index=-1;
+        graph[i].head->edge_value=X;
+        graph[i].head->next=NULL;
+    }
+}
+
+void InsertLinkNode(graph_node* node,int index,int edge_value)
+{
+    node--;
+    link_node* tmp=new link_node;
+    tmp->index=index-1;
+    tmp->edge_value=edge_value;
+    tmp->next=node->head->next;
+    node->head->next=tmp;
+}
+
+void OutputGraphInfo(const char* str,graph_node* graph)
+{
+    std::cout<<str<<std::endl;
+    for(int i=0;i<VERTEXS;i++)
+    {
+        link_node* find=graph[i].head->next;
+        while(find!=NULL)
+        {
+            std::cout<<"vertex"<<i+1<<" to vertex"<<find->index+1<<" have edge"<<std::endl;
+            find=find->next;
+        }
+    }
+    std::cout<<std::endl;
+}
+
+void DestroyGraph(graph_node* graph)
+{
+    for(int i=0;i<VERTEXS;i++)
+    {
+        link_node* tmp;
+        while(graph[i].head!=NULL)
+        {
+            tmp=graph[i].head;
+            graph[i].head=tmp->next;
+            delete tmp;
+        }
+    }
+}
+
+//顶点编号映射表
+char vertex_map[VERTEXS]={'A','B','C','D','E','F'};
+/**********************           GRAPHIC           **********************/
+
+/**********************           DIJKSTRA          **********************/
+void Dijkstra(const char* str, graph_node* G, const char* M, int start)
+{
+    bool visited[VERTEXS]={false};
+    table_node T[VERTEXS];
     
     //初始化表和起点
     InitTable(T);
@@ -210,35 +275,34 @@ void Dijkstra(const char* str, int(*G)[RLEN], const char* M, int start)
     T[start].pre=INVALID;
     
     //创建优先队列和起点元素
-    PriorityQueue Q(RLEN*2,0);
-    edge start_e = {start,start,0};
+    PriorityQueue Q(VERTEXS*2,0);
+    edge start_e={start,start,0};
     Q.enqueue(start_e);
     
     while (!Q.IsEmpty())
     {
-        edge cur = Q.dequeue();
-        int u = cur.target;
+        edge cur=Q.dequeue();
+        int u=cur.target;
         
         //跳过过时数据
         if (visited[u]) continue;
 
         //顶点路径已确认
-        visited[u] = true;
+        visited[u]=true;
         
         //访问邻接点，并更新其距离
-        for (int v = 0; v < CLEN; v++)
+        link_node* find=G[u].head->next;
+        while(find!=NULL)
         {
-            if(G[u][v]!=X)
+            int new_dist=T[u].distance+find->edge_value;
+            if (new_dist<T[find->index].distance)
             {
-                int new_dist = T[u].distance + G[u][v];
-                if (new_dist < T[v].distance)
-                {
-                    T[v].distance = new_dist;
-                    T[v].pre = u;
-                    edge e = {u, v, new_dist};
-                    Q.enqueue(e);
-                }
+                T[find->index].distance=new_dist;
+                T[find->index].pre=u;
+                edge e={u,find->index,new_dist};
+                Q.enqueue(e);
             }
+            find=find->next;
         }
     }
     //输出结果
@@ -247,41 +311,30 @@ void Dijkstra(const char* str, int(*G)[RLEN], const char* M, int start)
 }
 /**********************           DIJKSTRA          **********************/
 
-/**********************           GRAPHIC           **********************/
-
-//带权无向图的邻接矩阵
-int graph1[RLEN][CLEN]=
+void CreateGraph(graph_node* graph1)
 {
-    {X,2,5,X,X,X},
-    {X,X,1,3,X,X},
-    {X,X,X,3,4,1},
-    {X,X,X,X,1,4},
-    {X,X,X,X,X,1},
-    {X,X,X,X,X,X}
-};
-
-//顶点编号映射表
-char vertex_map[RLEN]={'A','B','C','D','E','F'};
-
-void OutputGraphInfo(const char* str,int(*graph)[RLEN])
-{
-    std::cout<<str<<std::endl;
-    for(int i=0;i<RLEN;i++)
-    {
-        for(int j=0;j<CLEN;j++)
-        {
-            if(graph[i][j]>0)
-                std::cout<<"vertex"<<i+1<<" to vertex"<<j+1<<" have edge"<<std::endl;
-        }
-    }
+    InitGraph(graph1);
+    InsertLinkNode(&graph1[1],2,2);
+    InsertLinkNode(&graph1[1],3,5);
+    InsertLinkNode(&graph1[2],3,1);
+    InsertLinkNode(&graph1[2],4,3);
+    InsertLinkNode(&graph1[3],4,3);
+    InsertLinkNode(&graph1[3],5,4);
+    InsertLinkNode(&graph1[3],6,1);
+    InsertLinkNode(&graph1[4],5,1);
+    InsertLinkNode(&graph1[4],6,4);
+    InsertLinkNode(&graph1[5],6,1);
 }
-/**********************           GRAPHIC           **********************/
 
 int main()
 {
+    //带权无向图邻接表
+    graph_node graph1[VERTEXS]={{NULL},{NULL},{NULL},{NULL},{NULL}};
+    CreateGraph(graph1);
+    
     OutputGraphInfo("graph1 info:",graph1);
-    std::cout<<std::endl;
     Dijkstra("graph1 dijkstra info:",graph1,vertex_map,0);
-
+    
+    DestroyGraph(graph1);
     return 0;
 }
