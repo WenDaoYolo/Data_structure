@@ -270,7 +270,7 @@ void OutputGraphInfo(const char* str,int(*graph)[RLEN])
     {
         for(int j=0;j<CLEN;j++)
         {
-            if(graph[i][j]>0)
+            if(graph[i][j]!=X)
                 std::cout<<"vertex"<<i+1<<" to vertex"<<j+1<<" have edge"<<std::endl;
         }
     }
